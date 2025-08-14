@@ -1,14 +1,16 @@
 🎵 Photo2Playlist
+
 Turn any photo into a personalized Spotify playlist! Upload an image and let AI analyze the mood, atmosphere, and vibes to generate a custom playlist that matches your photo.
 
 ✨ Features
+
 AI-Powered Image Analysis: Uses BLIP (Bootstrapped Language-Image Pre-training) to understand your photos
 Smart Music Curation: GPT generates songs that match the mood and atmosphere of your image
 Spotify Integration: Automatically creates playlists in your Spotify account
 Accurate Song Matching: Field-specific search ensures you get the right songs by the right artists
 
-
 🛠️ Setup
+
 Prerequisites
 
 Python 3.8+
