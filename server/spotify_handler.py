@@ -1,0 +1,40 @@
+from spotipy.oauth2 import SpotifyOAuth
+import spotipy
+import os
+
+# Create the SpotifyOAuth object to be shared
+sp_oauth = SpotifyOAuth(
+    client_id=os.getenv("SPOTIPY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIPY_CLIENT_SECRET"),
+    redirect_uri=os.getenv("SPOTIPY_REDIRECT_URI"),
+    scope="playlist-modify-public user-read-private"
+)
+
+# Function to create a Spotipy client from access token
+def get_spotify_client(access_token):
+    return spotipy.Spotify(auth=access_token)
+
+# Utility function to search for a song
+def search_track_on_spotify(sp, query): 
+    if " - " in query:
+        title, artist = [x.strip() for x in query.split(" - ", 1)]
+        
+        # Use field-specific search for best results
+        search_query = f'track:"{title}" artist:"{artist}"'
+        results = sp.search(q=search_query, type='track', limit=1)
+        
+        if results['tracks']['items']:
+            return results['tracks']['items'][0]['uri']
+    
+    # Fallback to basic search
+    results = sp.search(q=query, type='track', limit=1)
+    if results['tracks']['items']:
+        return results['tracks']['items'][0]['uri']
+    
+    return None
+
+# Create playlist and add tracks
+def create_playlist_from_song_list(sp, user_id, playlist_name, track_uris):
+    playlist = sp.user_playlist_create(user=user_id, name=playlist_name)
+    sp.playlist_add_items(playlist_id=playlist['id'], items=track_uris)
+    return playlist['external_urls']['spotify']

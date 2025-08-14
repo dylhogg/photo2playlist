@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <title>Photo2Playlist Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        img { max-width: 300px; margin: 20px; }
+        iframe { border-radius: 12px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Your Playlist</h1>
+    <p><strong>Image description:</strong> {{ caption }}</p>
+    <p><strong>Tracks found:</strong> {{ tracks_found }}</p>
+    
+    {% if playlist_url %}
+        <iframe src="https://open.spotify.com/embed/playlist/{{ playlist_id }}"
+                width="300" height="380" frameborder="0"
+                allowtransparency="true" allow="encrypted-media">
+        </iframe>
+    {% else %}
+        <p>No tracks found for this image.</p>
+    {% endif %}
+    
+    <br>
+    <form action="/" method="get">
+        <button type="submit">Generate with New Image</button>
+    </form>
+</body>
+</html>

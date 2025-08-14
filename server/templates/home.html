@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Photo2Playlist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css" />
+    <style>
+        body {
+            margin: 2rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+        .btn {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Photo2Playlist</h1>
+        <p>Upload an image, and we’ll create a Spotify playlist inspired by it.</p>
+
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required />
+            <button type="submit" class="button-primary btn">Upload & Continue</button>
+        </form>
+
+        {% if image_url %}
+            <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 400px;" />
+            <div>
+                {% if not logged_in %}
+                    <a href="/login" class="button">Login with Spotify</a>
+                {% else %}
+                    <a href="/generate_playlist" class="button-primary btn">Generate Playlist</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
