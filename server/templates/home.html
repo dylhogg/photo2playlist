@@ -3,49 +3,270 @@
 <head>
     <meta charset="UTF-8" />
     <title>Photo2Playlist</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css" />
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            margin: 2rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #191414 0%, #2a2a2a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 90%;
+            padding: 2rem 2.5rem 2.5rem 2.5rem;
+            background: rgba(40, 40, 40, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffffff;
             text-align: center;
         }
-        .container {
-            max-width: 500px;
-            margin: auto;
+
+        .subtitle {
+            color: #b3b3b3;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.5;
         }
-        h1 {
-            margin-bottom: 1.5rem;
+
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
         }
-        img {
-            max-width: 100%;
-            margin-top: 1rem;
-            border-radius: 8px;
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
         }
+
+        .file-upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #1db954;
+            background: rgba(29, 185, 84, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #1db954;
+            background: rgba(29, 185, 84, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: #b3b3b3;
+            font-size: 0.9rem;
+        }
+
         .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            min-width: 160px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #1db954, #1ed760);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 185, 84, 0.6);
+            background: linear-gradient(45deg, #1ed760, #21e065);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-generate {
+            background: linear-gradient(45deg, #8b5a3c, #cd853f);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(139, 90, 60, 0.4);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 90, 60, 0.6);
+            background: linear-gradient(45deg, #cd853f, #daa520);
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 2rem 0 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .uploaded-image:hover {
+            transform: scale(1.02);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+        }
+
+        .file-name {
+            color: #1db954;
+            font-size: 0.9rem;
             margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .file-upload-area {
+                padding: 2rem 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎵 Photo2Playlist</h1>
-        <p>Upload an image, and we’ll create a Spotify playlist inspired by it.</p>
+        <h1>Photo2Playlist</h1>
+        <p class="subtitle">Upload an image, and we'll create a Spotify playlist inspired by it.</p>
 
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*" required />
-            <button type="submit" class="button-primary btn">Upload & Continue</button>
+        <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="file-upload-wrapper">
+                <input type="file" name="image" accept="image/*" required class="file-input" id="fileInput" />
+                <div class="file-upload-area" id="uploadArea">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7,10 12,15 17,10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <div class="upload-text">Choose an image</div>
+                    <div class="upload-subtext">or drag and drop it here</div>
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+            <div style="text-align: center;">
+                <button type="submit" class="btn btn-primary">Upload & Continue</button>
+            </div>
         </form>
 
         {% if image_url %}
-            <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 400px;" />
-            <div>
+            <img src="{{ image_url }}" alt="Uploaded Image" class="uploaded-image" />
+            <div class="button-group">
                 {% if not logged_in %}
-                    <a href="/login" class="button">Login with Spotify</a>
+                    <a href="/login" class="btn btn-secondary">Login with Spotify</a>
                 {% else %}
-                    <a href="/generate_playlist" class="button-primary btn">Generate Playlist</a>
+                    <a href="/generate_playlist" class="btn btn-generate">Generate Playlist</a>
                 {% endif %}
             </div>
         {% endif %}
     </div>
+
+    <script>
+        // File upload functionality
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileName = document.getElementById('fileName');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                uploadArea.style.borderColor = '#1db954';
+                uploadArea.style.background = 'rgba(29, 185, 84, 0.1)';
+            }
+        });
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileName.textContent = files[0].name;
+                uploadArea.style.borderColor = '#1db954';
+                uploadArea.style.background = 'rgba(29, 185, 84, 0.1)';
+            }
+        });
+    </script>
 </body>
 </html>
