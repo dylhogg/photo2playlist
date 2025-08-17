@@ -13,6 +13,10 @@ from song_generator import get_song_list_from_caption
 from spotify_handler import search_track_on_spotify, create_playlist_from_song_list, sp_oauth, get_spotify_client
 from urllib.parse import urlparse
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
@@ -145,4 +149,4 @@ def handle_playlist_creation():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
