@@ -103,45 +103,75 @@ def get_valid_token():
     return token_info['access_token']
 
 def handle_playlist_creation():
-    # Use the full path for image processing
-    image_path = session.get('image_path')
-    if not image_path:
-        return "No image uploaded. Please go back and upload one."
+    try:
+        # Use the full path for image processing
+        image_path = session.get('image_path')
+        if not image_path:
+            return "No image uploaded. Please go back and upload one."
 
-    # Get a valid access token (will refresh if needed)
-    access_token = get_valid_token()
-    if not access_token:
-        return redirect('/login')
-    
-    sp = get_spotify_client(access_token)
+        # Get a valid access token (will refresh if needed)
+        access_token = get_valid_token()
+        if not access_token:
+            return redirect('/login')
+        
+        sp = get_spotify_client(access_token)
 
-    # Pass the full path to describe_image
-    description = describe_image(image_path)
-    raw_song_list = get_song_list_from_caption(description)
+        print("Starting image description...")
+        # Pass the full path to describe_image
+        description = describe_image(image_path)
+        print(f"Image description: {description}")
+        
+        print("Getting song list...")
+        raw_song_list = get_song_list_from_caption(description)
+        print(f"Got {len(raw_song_list)} songs")
 
-    track_uris = []
-    for line in raw_song_list:
-        uri = search_track_on_spotify(sp, line)
-        if uri:
-            track_uris.append(uri)
+        track_uris = []
+        print("Searching for tracks on Spotify...")
+        
+        # Limit to first 20 songs to avoid timeout
+        for i, line in enumerate(raw_song_list[:20]):
+            try:
+                print(f"Searching for track {i+1}: {line}")
+                uri = search_track_on_spotify(sp, line)
+                if uri:
+                    track_uris.append(uri)
+                    print(f"Found: {uri}")
+            except Exception as e:
+                print(f"Error searching for track '{line}': {e}")
+                continue
 
-    playlist_url = None
-    playlist_id = None
-    if track_uris:
-        user_id = sp.current_user()['id']
-        playlist_url = create_playlist_from_song_list(
-            sp, user_id, f"Photo2Playlist: {description}", track_uris
+        playlist_url = None
+        playlist_id = None
+        
+        if track_uris:
+            try:
+                print(f"Creating playlist with {len(track_uris)} tracks...")
+                user_id = sp.current_user()['id']
+                playlist_url = create_playlist_from_song_list(
+                    sp, user_id, f"Photo2Playlist: {description}", track_uris
+                )
+                # Extract playlist ID from URL
+                playlist_id = playlist_url.split("/")[-1] if playlist_url else None
+                print(f"Playlist created: {playlist_url}")
+            except Exception as e:
+                print(f"Error creating playlist: {e}")
+                return f"Error creating playlist: {str(e)}", 500
+        else:
+            print("No tracks found")
+
+        return render_template(
+            "playlist.html",
+            caption=description,
+            tracks_found=len(track_uris),
+            playlist_url=playlist_url,
+            playlist_id=playlist_id
         )
-        # Extract playlist ID from URL
-        playlist_id = playlist_url.split("/")[-1]
-
-    return render_template(
-        "playlist.html",
-        caption=description,
-        tracks_found=len(track_uris),
-        playlist_url=playlist_url,
-        playlist_id=playlist_id
-    )
+        
+    except Exception as e:
+        print(f"Error in playlist creation: {e}")
+        import traceback
+        traceback.print_exc()
+        return f"An error occurred: {str(e)}", 500
 
 
 if __name__ == '__main__':

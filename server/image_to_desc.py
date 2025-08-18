@@ -1,21 +1,72 @@
 from transformers import BlipProcessor, BlipForConditionalGeneration
 from PIL import Image
 import torch
+import os
+
+# Global variables to cache the model (avoid reloading every time)
+_processor = None
+_model = None
+
+def get_model_and_processor():
+    """Load and cache the model and processor"""
+    global _processor, _model
+    
+    if _processor is None or _model is None:
+        print("Loading BLIP model...")
+        # Add use_fast=True to fix the slow processor warning
+        _processor = BlipProcessor.from_pretrained(
+            "Salesforce/blip-image-captioning-base", 
+            use_fast=True
+        )
+        _model = BlipForConditionalGeneration.from_pretrained(
+            "Salesforce/blip-image-captioning-base"
+        )
+        print("Model loaded successfully")
+    
+    return _processor, _model
 
 def describe_image(image_path):
-    # 1. Load BLIP model + processor (used for preparing the image & decoding the output)
-    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-    model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
-    
-    # 2. Load the image and convert to RGB
-    image = Image.open(image_path).convert('RGB')
+    try:
+        print(f"Describing image: {image_path}")
+        
+        # Check if file exists
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image file not found: {image_path}")
+        
+        # Load cached model and processor
+        processor, model = get_model_and_processor()
+        
+        # Load the image and convert to RGB
+        print("Loading and processing image...")
+        image = Image.open(image_path).convert('RGB')
+        
+        # Resize image if too large (speeds up processing)
+        max_size = 512
+        if max(image.size) > max_size:
+            image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+            print(f"Resized image to {image.size}")
 
-    # 3. Tokenize the image for the model
-    inputs = processor(image, return_tensors="pt")
+        # Tokenize the image for the model
+        print("Tokenizing image...")
+        inputs = processor(image, return_tensors="pt")
 
-    # 4. Generate a caption (in token IDs)
-    out = model.generate(**inputs)
+        # Generate a caption with limited length (faster generation)
+        print("Generating caption...")
+        with torch.no_grad():  # Disable gradient computation for inference
+            out = model.generate(
+                **inputs,
+                max_length=50,  # Limit output length
+                num_beams=3,    # Reduce beam search (faster but slightly less quality)
+                early_stopping=True
+            )
 
-    # 5. Decode the tokens into a human-readable string
-    description = processor.decode(out[0], skip_special_tokens=True)
-    return description
+        # Decode the tokens into a human-readable string
+        description = processor.decode(out[0], skip_special_tokens=True)
+        print(f"Generated description: {description}")
+        
+        return description
+        
+    except Exception as e:
+        print(f"Error in describe_image: {e}")
+        # Return a fallback description instead of crashing
+        return "A photo with various visual elements"
