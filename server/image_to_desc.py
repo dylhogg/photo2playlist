@@ -27,7 +27,6 @@ def get_model_and_processor():
 
 def describe_image(image_path):
     try:
-        print(f"Describing image: {image_path}")
         
         # Check if file exists
         if not os.path.exists(image_path):
@@ -37,21 +36,17 @@ def describe_image(image_path):
         processor, model = get_model_and_processor()
         
         # Load the image and convert to RGB
-        print("Loading and processing image...")
         image = Image.open(image_path).convert('RGB')
         
         # Resize image if too large (speeds up processing)
         max_size = 512
         if max(image.size) > max_size:
             image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
-            print(f"Resized image to {image.size}")
 
         # Tokenize the image for the model
-        print("Tokenizing image...")
         inputs = processor(image, return_tensors="pt")
 
         # Generate a caption with limited length (faster generation)
-        print("Generating caption...")
         with torch.no_grad():  # Disable gradient computation for inference
             out = model.generate(
                 **inputs,
@@ -62,11 +57,9 @@ def describe_image(image_path):
 
         # Decode the tokens into a human-readable string
         description = processor.decode(out[0], skip_special_tokens=True)
-        print(f"Generated description: {description}")
         
         return description
         
     except Exception as e:
-        print(f"Error in describe_image: {e}")
         # Return a fallback description instead of crashing
         return "A photo with various visual elements"
