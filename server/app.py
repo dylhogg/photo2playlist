@@ -8,14 +8,13 @@ load_dotenv()
 #Flask app
 import re
 from flask import Flask, request, jsonify, redirect, session, url_for, render_template
-from image_to_desc import describe_image, get_model_and_processor
+from image_to_desc import describe_image
 from song_generator import get_song_list_from_caption
 from spotify_handler import search_track_on_spotify, create_playlist_from_song_list, sp_oauth, get_spotify_client
 from urllib.parse import urlparse
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
-get_model_and_processor()
 
 # Use paths relative to the Flask app location
 STATIC_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
@@ -176,4 +175,4 @@ def handle_playlist_creation():
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
