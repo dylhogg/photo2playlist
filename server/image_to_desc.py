@@ -31,7 +31,7 @@ def describe_image(image_path):
                     "content": [
                         {
                             "type": "text",
-                            "text": "Describe this image in 1-2 sentences, focusing on the mood, atmosphere, setting, and key visual elements that would inspire a music playlist. Be descriptive and evocative."
+                            "text": "Describe this image in a concise, evocative phrase (no more than 10 words). Focus on the mood, atmosphere, or key visual element that could inspire a playlist title. Keep it short, creative, and under 100 characters."
                         },
                         {
                             "type": "image_url",
