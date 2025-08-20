@@ -147,11 +147,7 @@ def handle_playlist_creation():
             try:
                 print(f"Creating playlist with {len(track_uris)} tracks...")
                 user_id = sp.current_user()['id']
-                playlist_url = create_playlist_from_song_list(
-                    sp, user_id, f"Photo2Playlist: {description}", track_uris
-                )
-                # Extract playlist ID from URL
-                playlist_id = playlist_url.split("/")[-1] if playlist_url else None
+                playlist_url, playlist_id = create_playlist_from_song_list(sp, user_id, f"Photo2Playlist: {description}", track_uris)
                 print(f"Playlist created: {playlist_url}")
             except Exception as e:
                 print(f"Error creating playlist: {e}")
