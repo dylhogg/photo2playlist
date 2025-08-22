@@ -7,6 +7,7 @@ load_dotenv()
 
 #Flask app
 import re
+import time
 from flask import Flask, request, jsonify, redirect, session, url_for, render_template
 from image_to_desc import describe_image
 from song_generator import get_song_list_from_caption
@@ -168,6 +169,220 @@ def handle_playlist_creation():
         import traceback
         traceback.print_exc()
         return f"An error occurred: {str(e)}", 500
+    
+@app.route('/test_playlist')
+def test_playlist():
+    """Create a test playlist with known popular songs"""
+    
+    # Check if logged in
+    if 'token_info' not in session:
+        return redirect('/login')
+    
+    # Get valid token
+    access_token = get_valid_token()
+    if not access_token:
+        return redirect('/login')
+    
+    sp = get_spotify_client(access_token)
+    
+    # List of guaranteed popular songs
+    test_songs = [
+        "Bohemian Rhapsody - Queen",
+        "Hotel California - Eagles", 
+        "Sweet Child O' Mine - Guns N' Roses",
+        "Imagine - John Lennon",
+        "Billie Jean - Michael Jackson",
+        "Shape of You - Ed Sheeran",
+        "Blinding Lights - The Weeknd",
+        "As It Was - Harry Styles",
+        "Don't Stop Believin' - Journey",
+        "Stairway to Heaven - Led Zeppelin"
+    ]
+    
+    print(f"TEST PLAYLIST: Starting with {len(test_songs)} songs")
+    
+    track_uris = []
+    search_results = []
+    
+    # Search for each song
+    for i, song in enumerate(test_songs):
+        try:
+            print(f"Searching for song {i+1}/{len(test_songs)}: {song}")
+            uri = search_track_on_spotify(sp, song)
+            
+            result = {
+                'song': song,
+                'found': bool(uri),
+                'uri': uri
+            }
+            
+            if uri:
+                track_uris.append(uri)
+                print(f"  ✅ Found: {uri}")
+            else:
+                print(f"  ❌ Not found")
+            
+            search_results.append(result)
+            
+        except Exception as e:
+            print(f"  ❌ Error: {e}")
+            search_results.append({
+                'song': song,
+                'found': False,
+                'error': str(e)
+            })
+    
+    print(f"TEST PLAYLIST: Found {len(track_uris)} out of {len(test_songs)} tracks")
+    
+    # Create playlist if we found tracks
+    playlist_url = None
+    playlist_id = None
+    
+    if track_uris:
+        try:
+            user_id = sp.current_user()['id']
+            playlist_name = f"Test Playlist - {len(track_uris)} tracks"
+            
+            print(f"Creating playlist '{playlist_name}' for user {user_id}")
+            playlist_url, playlist_id = create_playlist_from_song_list(
+                sp, user_id, playlist_name, track_uris
+            )
+            print(f"Playlist created: {playlist_url}")
+            
+        except Exception as e:
+            print(f"Error creating playlist: {e}")
+            return {
+                'error': f'Failed to create playlist: {str(e)}',
+                'search_results': search_results,
+                'tracks_found': len(track_uris),
+                'device_info': request.headers.get('User-Agent')
+            }
+    
+    # Return results
+    return render_template(
+        "playlist.html",
+        caption=f"Test playlist with popular songs",
+        tracks_found=len(track_uris),
+        playlist_url=playlist_url,
+        playlist_id=playlist_id
+    )
+
+@app.route('/test_playlist_json')
+def test_playlist_json():
+    """Same test but returns JSON results for debugging"""
+    
+    # Check if logged in
+    if 'token_info' not in session:
+        return {'error': 'Not logged into Spotify', 'login_url': '/login'}
+    
+    # Get valid token
+    access_token = get_valid_token()
+    if not access_token:
+        return {'error': 'Failed to get valid token', 'login_url': '/login'}
+    
+    sp = get_spotify_client(access_token)
+    
+    # Test songs
+    test_songs = [
+        "Bohemian Rhapsody - Queen",
+        "Hotel California - Eagles", 
+        "Sweet Child O' Mine - Guns N' Roses",
+        "Imagine - John Lennon",
+        "Billie Jean - Michael Jackson"
+    ]
+    
+    results = {
+        'device_info': {
+            'user_agent': request.headers.get('User-Agent'),
+            'remote_ip': request.remote_addr,
+            'is_mobile': 'Mobile' in request.headers.get('User-Agent', '')
+        },
+        'user_info': {},
+        'search_results': [],
+        'playlist_info': {}
+    }
+    
+    try:
+        # Get user info
+        user = sp.current_user()
+        results['user_info'] = {
+            'id': user['id'],
+            'display_name': user.get('display_name'),
+            'country': user.get('country'),
+            'product': user.get('product')
+        }
+    except Exception as e:
+        results['user_info'] = {'error': str(e)}
+    
+    # Test searches
+    track_uris = []
+    
+    for song in test_songs:
+        try:
+            start_time = time.time()
+            uri = search_track_on_spotify(sp, song)
+            search_time = time.time() - start_time
+            
+            result = {
+                'song': song,
+                'found': bool(uri),
+                'uri': uri,
+                'search_duration': round(search_time, 3)
+            }
+            
+            if uri:
+                track_uris.append(uri)
+            
+            results['search_results'].append(result)
+            
+        except Exception as e:
+            results['search_results'].append({
+                'song': song,
+                'found': False,
+                'error': str(e),
+                'search_duration': 0
+            })
+    
+    # Summary
+    results['summary'] = {
+        'total_songs': len(test_songs),
+        'found_songs': len(track_uris),
+        'success_rate': round(len(track_uris) / len(test_songs) * 100, 1),
+        'avg_search_time': round(
+            sum(r.get('search_duration', 0) for r in results['search_results']) / len(results['search_results']),
+            3
+        ) if results['search_results'] else 0
+    }
+    
+    # Try to create playlist
+    if track_uris:
+        try:
+            user_id = results['user_info']['id']
+            playlist_name = f"Test - {len(track_uris)} tracks"
+            
+            playlist_url, playlist_id = create_playlist_from_song_list(
+                sp, user_id, playlist_name, track_uris
+            )
+            
+            results['playlist_info'] = {
+                'success': True,
+                'playlist_url': playlist_url,
+                'playlist_id': playlist_id,
+                'tracks_added': len(track_uris)
+            }
+            
+        except Exception as e:
+            results['playlist_info'] = {
+                'success': False,
+                'error': str(e)
+            }
+    else:
+        results['playlist_info'] = {
+            'success': False,
+            'reason': 'No tracks found to add'
+        }
+    
+    return results
 
 
 if __name__ == '__main__':
