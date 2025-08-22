@@ -47,6 +47,9 @@ def create_playlist_from_song_list(sp, user_id, playlist_name, track_uris):
     if track_uris:
         sp.playlist_add_items(playlist_id=playlist['id'], items=track_uris)
     
+    time.sleep(1)
+    sp.playlist(playlist['id'])
+
     # Small delay to ensure playlist is fully created
     time.sleep(1)
     
