@@ -44,7 +44,7 @@ def describe_image(image_path):
                 }
             ],
             max_tokens=200,
-            temperature=0.7  # Slightly creative but consistent
+            temperature=0.7
         )
         
         description = response.choices[0].message.content.strip()
