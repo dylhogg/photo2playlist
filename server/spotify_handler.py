@@ -20,7 +20,6 @@ def search_track_on_spotify(sp, query):
     if " - " in query:
         title, artist = [x.strip() for x in query.split(" - ", 1)]
         
-        # Use field-specific search for best results
         search_query = f'track:"{title}" artist:"{artist}"'
         results = sp.search(q=search_query, type='track', limit=1)
         
@@ -47,10 +46,11 @@ def create_playlist_from_song_list(sp, user_id, playlist_name, track_uris):
     if track_uris:
         sp.playlist_add_items(playlist_id=playlist['id'], items=track_uris)
     
-    time.sleep(1)
-    sp.playlist(playlist['id'])
-
     # Small delay to ensure playlist is fully created
+    time.sleep(1)
+
+    # refresh playlist to reload spotify embed
+    sp.playlist(playlist['id'])
     time.sleep(1)
     
     return playlist['external_urls']['spotify'], playlist['id']
