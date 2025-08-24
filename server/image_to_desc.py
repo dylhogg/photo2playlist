@@ -51,6 +51,5 @@ def describe_image(image_path):
         return description
         
     except Exception as e:
-        print(f"Error with OpenAI Vision API: {e}")
-        # Fallback description that's still useful for music generation
+        # Fallback description
         return "A photo with various visual elements and atmosphere"
