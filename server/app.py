@@ -8,6 +8,7 @@ load_dotenv()
 #Flask app
 import re
 import time
+from datetime import timedelta
 from flask import Flask, request, jsonify, redirect, session, url_for, render_template
 from image_to_desc import describe_image
 from song_generator import get_song_list_from_caption
@@ -30,9 +31,6 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
-@app.before_first_request
-def clear_stale_sessions():
-    pass
 
 @app.route('/')
 def home():
@@ -76,9 +74,6 @@ def upload_photo():
     
     # Save to the static/uploads folder within your app directory
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    
-    # The directory should already exist, but just in case
-    os.makedirs(os.path.dirname(image_path), exist_ok=True)
     
     image.save(image_path)
 
