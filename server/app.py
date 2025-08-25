@@ -159,6 +159,19 @@ def handle_playlist_creation():
         
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
+    
+@app.route('/clear')
+def clear_session():
+    image_filename = session.get('image_filename')
+    if image_filename:
+        try:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+            os.remove(file_path)
+        except OSError:
+            pass
+    
+    session.clear()
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
