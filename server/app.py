@@ -25,6 +25,15 @@ os.makedirs(STATIC_UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = STATIC_UPLOAD_FOLDER
 
+#session overlap debug
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+@app.before_first_request
+def clear_stale_sessions():
+    pass
+
 @app.route('/')
 def home():
     # Get both the full path and relative path from session
@@ -34,7 +43,14 @@ def home():
     # Create the web-accessible URL if image exists
     image_url = None
     if image_filename:
-        image_url = url_for('static', filename=f'uploads/{image_filename}')
+        # Check if the file actually exists before showing it
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+        if os.path.exists(file_path):
+            image_url = url_for('static', filename=f'uploads/{image_filename}')
+        else:
+            # Clear invalid session data
+            session.pop('image_filename', None)
+            session.pop('image_path', None)
 
     return render_template('home.html', image_url=image_url, logged_in=logged_in)
 
