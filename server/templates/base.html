@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Photo2Playlist{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d0d0d;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 1.5rem max(2rem, 4vw);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .logo-link {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #1db954;
+            text-decoration: none;
+        }
+
+        .logo-link:hover { color: #1ed760; }
+
+        .page {
+            padding: 2rem max(2rem, 4vw) 5rem;
+        }
+
+        h1 {
+            font-size: 3.75rem;
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.7;
+            margin-bottom: 1.75rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.65rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-family: inherit;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .btn-green {
+            background: #1db954;
+            color: #000;
+        }
+
+        .btn-green:hover { background: #1ed760; }
+
+        .btn-white {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-white:hover { background: #e0e0e0; }
+
+        .btn-outline {
+            background: transparent;
+            color: #666;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-outline:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.07);
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+        }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo-link">Photo2Playlist</a>
+    </header>
+    <div class="page">
+        {% block content %}{% endblock %}
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

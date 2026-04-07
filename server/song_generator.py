@@ -1,12 +1,9 @@
 from openai import OpenAI
 import os
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_song_list_from_caption(caption):
-
     
     prompt = f"""
 You are a music curator. Based on this scene description: "{caption}", suggest 20 real songs that match the mood and atmosphere.
@@ -16,7 +13,7 @@ Bohemian Rhapsody - Queen
 Hotel California - Eagles
 Sweet Child O' Mine - Guns N' Roses
 
-IMPORTANT: 
+IMPORTANT:
 - Use exactly the format "Song Title - Artist"
 - Do NOT use numbers (1., 2., 3., etc.)
 - Do NOT use bullet points or dashes at the start

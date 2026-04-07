@@ -41,6 +41,7 @@ Thumbs.db
 *.log
 
 # Model cache (Transformers downloads models here)
+.cache
 .cache/
 transformers_cache/
 
